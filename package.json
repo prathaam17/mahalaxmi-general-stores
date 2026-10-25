@@ -1,0 +1,22 @@
+{
+  "name": "mahalaxmi-general-stores",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline-first retail management & POS system for Mahalaxmi General Stores, Honnavar",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"bgYellow.bold,bgBlue.bold\" \"npm --workspace=server run dev\" \"npm --workspace=client run dev\"",
+    "dev:server": "npm --workspace=server run dev",
+    "dev:client": "npm --workspace=client run dev",
+    "build": "npm --workspace=server run build && npm --workspace=client run build",
+    "test": "npm --workspace=server run test && npm --workspace=client run test",
+    "db:migrate": "npm --workspace=server run db:migrate",
+    "db:seed": "npm --workspace=server run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

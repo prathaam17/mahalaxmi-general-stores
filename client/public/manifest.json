@@ -1,0 +1,17 @@
+{
+  "short_name": "Mahalaxmi POS",
+  "name": "Mahalaxmi General Stores - Retail POS & Inventory",
+  "description": "Offline-First Retail Management & POS System for Mahalaxmi General Stores, Honnavar",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#d97706",
+  "display": "standalone",
+  "orientation": "any"
+}

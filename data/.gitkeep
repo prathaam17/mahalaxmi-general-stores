@@ -1,0 +1,2 @@
+# Data directory for SQLite database storage
+# Real .db files are ignored by .gitignore to keep shop financial data safe and local.

@@ -75,6 +75,30 @@ export interface ProductItem {
   minStockAlert: number;
 }
 
+export interface ProductWithCategory extends ProductItem {
+  profitMarginPercent: number;
+  stockStatus: 'normal' | 'low' | 'out_of_stock';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryItem {
+  id: number;
+  name: string;
+  description: string | null;
+  productCount: number;
+}
+
+export interface InventoryMetrics {
+  totalProducts: number;
+  totalValuationCost: number;
+  totalValuationRetail: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  looseGoodsCount: number;
+}
+
 export interface Customer {
   id: number;
   name: string;
@@ -150,4 +174,18 @@ export interface BillDetail {
     unitPrice: number;
     lineTotal: number;
   }>;
+}
+
+export interface ProductFormData {
+  barcode?: string | null;
+  name: string;
+  kannadaName?: string | null;
+  categoryId?: number | null;
+  isLoose: boolean;
+  unit: string;
+  costPrice: number;
+  sellingPrice: number;
+  mrp?: number;
+  currentStock?: number;
+  minStockAlert?: number;
 }

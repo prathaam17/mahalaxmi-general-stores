@@ -1,6 +1,10 @@
 import type {
   DashboardSummary,
   ProductItem,
+  ProductWithCategory,
+  CategoryItem,
+  InventoryMetrics,
+  ProductFormData,
   Customer,
   CreateBillPayload,
   BillDetail,
@@ -27,6 +31,122 @@ export async function checkServerHealth(): Promise<{ status: string; shop: strin
   }
   return response.json();
 }
+
+// ----------------------------------------------------
+// Products & Inventory APIs
+// ----------------------------------------------------
+
+export interface FetchProductsFilter {
+  search?: string;
+  categoryId?: number;
+  stockStatus?: 'all' | 'low' | 'out_of_stock' | 'normal';
+  isLoose?: boolean;
+}
+
+export async function fetchProducts(filters: FetchProductsFilter = {}): Promise<ProductWithCategory[]> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.categoryId) params.set('categoryId', String(filters.categoryId));
+  if (filters.stockStatus && filters.stockStatus !== 'all') params.set('stockStatus', filters.stockStatus);
+  if (filters.isLoose !== undefined) params.set('isLoose', String(filters.isLoose));
+
+  const url = `${API_BASE}/products?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch products (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function fetchInventoryMetrics(): Promise<InventoryMetrics> {
+  const response = await fetch(`${API_BASE}/products/metrics`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch inventory metrics (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function fetchCategories(): Promise<CategoryItem[]> {
+  const response = await fetch(`${API_BASE}/products/categories`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch categories (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function createCategory(name: string, description?: string): Promise<CategoryItem> {
+  const response = await fetch(`${API_BASE}/products/categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to create category');
+  }
+  return result.data;
+}
+
+export async function createProduct(data: ProductFormData): Promise<ProductWithCategory> {
+  const response = await fetch(`${API_BASE}/products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to create product');
+  }
+  return result.data;
+}
+
+export async function updateProduct(id: number, data: ProductFormData): Promise<ProductWithCategory> {
+  const response = await fetch(`${API_BASE}/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to update product');
+  }
+  return result.data;
+}
+
+export async function adjustProductStock(
+  id: number,
+  deltaQuantity: number,
+  reason: string
+): Promise<ProductWithCategory> {
+  const response = await fetch(`${API_BASE}/products/${id}/adjust-stock`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deltaQuantity, reason }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to adjust stock');
+  }
+  return result.data;
+}
+
+export async function deactivateProduct(id: number): Promise<boolean> {
+  const response = await fetch(`${API_BASE}/products/${id}`, {
+    method: 'DELETE',
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to deactivate product');
+  }
+  return true;
+}
+
+// ----------------------------------------------------
+// Billing APIs
+// ----------------------------------------------------
 
 export async function searchProducts(query: string = ''): Promise<ProductItem[]> {
   const url = `${API_BASE}/billing/products?q=${encodeURIComponent(query)}`;

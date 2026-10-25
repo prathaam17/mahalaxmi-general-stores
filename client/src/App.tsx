@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { BillingPage } from './pages/BillingPage';
+import { ProductsPage } from './pages/ProductsPage';
 import { fetchDashboardSummary } from './services/api';
 import type { DashboardSummary, AppModule } from './types';
 import {
@@ -71,6 +72,10 @@ export function App() {
 
     if (activeModule === 'billing') {
       return <BillingPage />;
+    }
+
+    if (activeModule === 'products') {
+      return <ProductsPage />;
     }
 
     const placeholderConfig = {

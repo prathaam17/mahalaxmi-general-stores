@@ -58,3 +58,96 @@ export type AppModule =
   | 'expenses'
   | 'reports'
   | 'settings';
+
+export interface ProductItem {
+  id: number;
+  barcode: string | null;
+  name: string;
+  kannadaName: string | null;
+  categoryId: number | null;
+  categoryName: string | null;
+  isLoose: boolean;
+  unit: string;
+  costPrice: number;
+  sellingPrice: number;
+  mrp: number;
+  currentStock: number;
+  minStockAlert: number;
+}
+
+export interface Customer {
+  id: number;
+  name: string;
+  phone: string | null;
+  address: string | null;
+  creditLimit: number;
+  currentBalance: number;
+  availableCredit: number;
+}
+
+export interface CartItem {
+  productId?: number | null;
+  barcode?: string | null;
+  productName: string;
+  kannadaName?: string | null;
+  quantity: number;
+  unit: string;
+  costPrice?: number;
+  unitPrice: number;
+  lineTotal: number;
+  isLoose?: boolean;
+}
+
+export interface CreateBillPayload {
+  customerId?: number | null;
+  items: Array<{
+    productId?: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    costPrice?: number;
+    unitPrice: number;
+    lineTotal: number;
+  }>;
+  discount?: number;
+  taxAmount?: number;
+  paymentMode: 'CASH' | 'UPI' | 'CREDIT' | 'SPLIT';
+  cashReceived?: number;
+  upiReceived?: number;
+  creditAdded?: number;
+  notes?: string;
+}
+
+export interface BillDetail {
+  id: number;
+  billNumber: string;
+  customerId: number | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  totalItems: number;
+  subtotal: number;
+  discount: number;
+  taxAmount: number;
+  grandTotal: number;
+  paymentMode: string;
+  cashReceived: number;
+  upiReceived: number;
+  creditAdded: number;
+  changeReturned: number;
+  paymentStatus: string;
+  notes: string | null;
+  isReversed: boolean;
+  reversedAt: string | null;
+  reversalReason: string | null;
+  createdAt: string;
+  items: Array<{
+    id: number;
+    productId: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    costPrice: number;
+    unitPrice: number;
+    lineTotal: number;
+  }>;
+}

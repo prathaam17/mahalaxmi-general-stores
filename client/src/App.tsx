@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
+import { BillingPage } from './pages/BillingPage';
 import { fetchDashboardSummary } from './services/api';
 import type { DashboardSummary, AppModule } from './types';
 import {
@@ -66,6 +67,10 @@ export function App() {
           onRefresh={loadData}
         />
       );
+    }
+
+    if (activeModule === 'billing') {
+      return <BillingPage />;
     }
 
     const placeholderConfig = {

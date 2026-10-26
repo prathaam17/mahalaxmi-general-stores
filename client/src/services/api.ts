@@ -12,6 +12,12 @@ import type {
   CustomerFormData,
   CreateBillPayload,
   BillDetail,
+  SupplierWithMeta,
+  SupplierMetrics,
+  SupplierStatement,
+  SupplierFormData,
+  PurchaseFormData,
+  PurchaseDetail,
 } from '../types';
 
 const API_BASE = '/api';
@@ -311,4 +317,124 @@ export async function reverseBill(id: number, reason: string): Promise<BillDetai
     throw new Error(result.error?.message || 'Failed to reverse bill');
   }
   return result.data;
+}
+
+// ----------------------------------------------------
+// Suppliers & Purchase Entries APIs
+// ----------------------------------------------------
+
+export async function fetchSuppliersList(search?: string, hasBalance?: boolean): Promise<SupplierWithMeta[]> {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (hasBalance) params.set('hasBalance', 'true');
+
+  const url = `${API_BASE}/suppliers?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch suppliers (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function fetchSupplierMetrics(): Promise<SupplierMetrics> {
+  const response = await fetch(`${API_BASE}/suppliers/metrics`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch supplier metrics (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function createSupplier(data: SupplierFormData): Promise<SupplierWithMeta> {
+  const response = await fetch(`${API_BASE}/suppliers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to create supplier');
+  }
+  return result.data;
+}
+
+export async function updateSupplier(id: number, data: SupplierFormData): Promise<SupplierWithMeta> {
+  const response = await fetch(`${API_BASE}/suppliers/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to update supplier details');
+  }
+  return result.data;
+}
+
+export async function deleteSupplier(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE}/suppliers/${id}`, {
+    method: 'DELETE',
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to deactivate supplier');
+  }
+}
+
+export async function recordSupplierPurchase(data: PurchaseFormData): Promise<PurchaseDetail> {
+  const response = await fetch(`${API_BASE}/suppliers/purchases`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to record purchase entry');
+  }
+  return result.data;
+}
+
+export async function recordSupplierPayment(
+  id: number,
+  amount: number,
+  paymentMode: 'CASH' | 'UPI' | 'BANK_TRANSFER',
+  notes?: string
+): Promise<{ supplier: SupplierWithMeta }> {
+  const response = await fetch(`${API_BASE}/suppliers/${id}/payments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, paymentMode, notes }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to record payment to supplier');
+  }
+  return result.data;
+}
+
+export async function fetchSupplierStatement(id: number): Promise<SupplierStatement> {
+  const response = await fetch(`${API_BASE}/suppliers/${id}/statement`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch supplier statement (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message || 'Failed to load supplier statement');
+  }
+  return result.data;
+}
+
+export async function fetchPurchasesList(supplierId?: number, limit?: number): Promise<PurchaseDetail[]> {
+  const params = new URLSearchParams();
+  if (supplierId) params.set('supplierId', String(supplierId));
+  if (limit) params.set('limit', String(limit));
+
+  const url = `${API_BASE}/suppliers/purchases?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch purchases (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
 }

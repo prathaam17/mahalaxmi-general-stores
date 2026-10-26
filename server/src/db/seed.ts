@@ -8,17 +8,21 @@ export function seedDemoData(database = getDatabase()): void {
   console.log('[Seed] Seeding realistic sample demo data for Mahalaxmi General Stores...');
 
   runInTransaction(database, () => {
-    // Clear existing demo data
+    // Clear existing demo data and reset autoincrement sequences
     database.exec(`
       DELETE FROM audit_logs;
       DELETE FROM customer_ledger;
       DELETE FROM bill_items;
       DELETE FROM bills;
+      DELETE FROM supplier_ledger;
+      DELETE FROM purchase_items;
+      DELETE FROM purchases;
       DELETE FROM expenses;
       DELETE FROM products;
       DELETE FROM categories;
       DELETE FROM customers;
       DELETE FROM suppliers;
+      DELETE FROM sqlite_sequence;
     `);
 
     // 1. Categories
@@ -30,6 +34,9 @@ export function seedDemoData(database = getDatabase()): void {
     insertCat.run('Soaps & Detergents', 'Bathing soap, Washing powder, Cleaners');
     insertCat.run('Snacks & Beverages', 'Biscuits, Tea powder, Coffee, Snacks');
 
+    const catRows = database.prepare('SELECT id, name FROM categories').all() as Array<{ id: number; name: string }>;
+    const cats: Record<string, number> = Object.fromEntries(catRows.map((c) => [c.name, c.id]));
+
     // 2. Products (Loose goods & Packaged goods)
     const insertProd = database.prepare(`
       INSERT INTO products (
@@ -39,22 +46,22 @@ export function seedDemoData(database = getDatabase()): void {
     `);
 
     // Loose goods (sold by weight/kg)
-    insertProd.run('LOOSE-001', 'Sona Masoori Rice (Loose)', 'ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ', 1, 1, 'kg', 48.00, 56.00, 60.00, 245.50, 50.00);
-    insertProd.run('LOOSE-002', 'Sugar (Loose)', 'ಸಕ್ಕರೆ', 1, 1, 'kg', 38.00, 44.00, 46.00, 180.00, 40.00);
-    insertProd.run('LOOSE-003', 'Toor Dal Premium (Loose)', 'ತೊಗರಿ ಬೇಳೆ', 1, 1, 'kg', 142.00, 160.00, 170.00, 45.20, 25.00);
-    insertProd.run('LOOSE-004', 'Jaggery / Bellada Achhu', 'ಬೆಲ್ಲದ ಅಚ್ಚು', 1, 1, 'kg', 52.00, 62.00, 65.00, 14.00, 20.00); // Low stock alert!
-    insertProd.run('LOOSE-005', 'Groundnut Seeds (Loose)', 'ಕಡಲೆಕಾಯಿ ಬೀಜ', 1, 1, 'kg', 115.00, 130.00, 140.00, 32.00, 15.00);
+    insertProd.run('LOOSE-001', 'Sona Masoori Rice (Loose)', 'ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ', cats['Grains & Pulses'], 1, 'kg', 48.00, 56.00, 60.00, 245.50, 50.00);
+    insertProd.run('LOOSE-002', 'Sugar (Loose)', 'ಸಕ್ಕರೆ', cats['Grains & Pulses'], 1, 'kg', 38.00, 44.00, 46.00, 180.00, 40.00);
+    insertProd.run('LOOSE-003', 'Toor Dal Premium (Loose)', 'ತೊಗರಿ ಬೇಳೆ', cats['Grains & Pulses'], 1, 'kg', 142.00, 160.00, 170.00, 45.20, 25.00);
+    insertProd.run('LOOSE-004', 'Jaggery / Bellada Achhu', 'ಬೆಲ್ಲದ ಅಚ್ಚು', cats['Grains & Pulses'], 1, 'kg', 52.00, 62.00, 65.00, 14.00, 20.00); // Low stock alert!
+    insertProd.run('LOOSE-005', 'Groundnut Seeds (Loose)', 'ಕಡಲೆಕಾಯಿ ಬೀಜ', cats['Grains & Pulses'], 1, 'kg', 115.00, 130.00, 140.00, 32.00, 15.00);
 
     // Packaged goods
-    insertProd.run('8901030383112', 'Nandini Toned Milk 500ml', 'ನಂದಿನಿ ನೀಲಿ ಹಾಲು', 3, 0, 'packet', 23.50, 25.00, 25.00, 18.00, 10.00);
-    insertProd.run('8901030383999', 'Nandini Pure Ghee 200ml', 'ನಂದಿನಿ ಶುದ್ಧ ತುಪ್ಪ', 2, 0, 'packet', 128.00, 140.00, 140.00, 8.00, 10.00); // Low stock alert!
-    insertProd.run('8901030001000', 'Tata Salt 1kg', 'ಟಾಟಾ ಉಪ್ಪು', 4, 0, 'packet', 24.00, 28.00, 28.00, 65.00, 15.00);
-    insertProd.run('8901030002001', 'Gemini Sunflower Oil 1L Pouch', 'ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ', 2, 0, 'packet', 122.00, 136.00, 145.00, 34.00, 12.00);
-    insertProd.run('8901719101010', 'Parle-G Gold Biscuit 250g', 'ಪಾರ್ಲೆ-ಜಿ ಬಿಸ್ಕತ್ತು', 6, 0, 'packet', 25.00, 30.00, 30.00, 48.00, 12.00);
-    insertProd.run('8901030588200', 'Red Label Tea 250g', 'ರೆಡ್ ಲೇಬಲ್ ಚಹಾ ಪುಡಿ', 6, 0, 'packet', 115.00, 130.00, 135.00, 22.00, 8.00);
-    insertProd.run('8901030691230', 'Surf Excel Quick Wash 500g', 'ಸರ್ಫ್ ಎಕ್ಸೆಲ್', 5, 0, 'packet', 85.00, 95.00, 100.00, 26.00, 10.00);
-    insertProd.run('8901030784560', 'Mysore Sandal Soap 75g', 'ಮೈಸೂರು ಸ್ಯಾಂಡಲ್ ಸೋಪು', 5, 0, 'piece', 42.00, 48.00, 48.00, 3.00, 10.00); // Low stock alert!
-    insertProd.run('8901030897650', 'Dettol Original Soap 75g', 'ಡೆಟ್ಟಾಲ್ ಸೋಪ್', 5, 0, 'piece', 34.00, 40.00, 40.00, 30.00, 10.00);
+    insertProd.run('8901030383112', 'Nandini Toned Milk 500ml', 'ನಂದಿನಿ ನೀಲಿ ಹಾಲು', cats['Dairy & Fresh'], 0, 'packet', 23.50, 25.00, 25.00, 18.00, 10.00);
+    insertProd.run('8901030383999', 'Nandini Pure Ghee 200ml', 'ನಂದಿನಿ ಶುದ್ಧ ತುಪ್ಪ', cats['Oils & Ghee'], 0, 'packet', 128.00, 140.00, 140.00, 8.00, 10.00); // Low stock alert!
+    insertProd.run('8901030001000', 'Tata Salt 1kg', 'ಟಾಟಾ ಉಪ್ಪು', cats['Spices & Masala'], 0, 'packet', 24.00, 28.00, 28.00, 65.00, 15.00);
+    insertProd.run('8901030002001', 'Gemini Sunflower Oil 1L Pouch', 'ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ', cats['Oils & Ghee'], 0, 'packet', 122.00, 136.00, 145.00, 34.00, 12.00);
+    insertProd.run('8901719101010', 'Parle-G Gold Biscuit 250g', 'ಪಾರ್ಲೆ-ಜಿ ಬಿಸ್ಕತ್ತು', cats['Snacks & Beverages'], 0, 'packet', 25.00, 30.00, 30.00, 48.00, 12.00);
+    insertProd.run('8901030588200', 'Red Label Tea 250g', 'ರೆಡ್ ಲೇಬಲ್ ಚಹಾ ಪುಡಿ', cats['Snacks & Beverages'], 0, 'packet', 115.00, 130.00, 135.00, 22.00, 8.00);
+    insertProd.run('8901030691230', 'Surf Excel Quick Wash 500g', 'ಸರ್ಫ್ ಎಕ್ಸೆಲ್', cats['Soaps & Detergents'], 0, 'packet', 85.00, 95.00, 100.00, 26.00, 10.00);
+    insertProd.run('8901030784560', 'Mysore Sandal Soap 75g', 'ಮೈಸೂರು ಸ್ಯಾಂಡಲ್ ಸೋಪು', cats['Soaps & Detergents'], 0, 'piece', 42.00, 48.00, 48.00, 3.00, 10.00); // Low stock alert!
+    insertProd.run('8901030897650', 'Dettol Original Soap 75g', 'ಡೆಟ್ಟಾಲ್ ಸೋಪ್', cats['Soaps & Detergents'], 0, 'piece', 34.00, 40.00, 40.00, 30.00, 10.00);
 
     // 3. Customers (Local residents of Honnavar with Udhaar accounts)
     const insertCust = database.prepare(`
@@ -73,6 +80,38 @@ export function seedDemoData(database = getDatabase()): void {
     `);
     insertSupp.run('Kamat Wholesale Distributors', '+91 94481 22334', '29ABCDE1234F1Z5', 'Bunder Road, Kumta', 12500.00);
     insertSupp.run('Canara Dairy Agency (Nandini)', '+91 94482 33445', '29BCDEF2345G2Z6', 'Main Road, Honnavar', 3200.00);
+
+    // Initial Supplier Ledger Entries
+    database.prepare(`
+      INSERT INTO supplier_ledger (supplier_id, entry_type, amount, balance_after, payment_mode, notes)
+      VALUES (?, 'CREDIT', ?, ?, 'OPENING', 'Opening payable balance')
+    `).run(1, 12500.00, 12500.00);
+
+    database.prepare(`
+      INSERT INTO supplier_ledger (supplier_id, entry_type, amount, balance_after, payment_mode, notes)
+      VALUES (?, 'CREDIT', ?, ?, 'OPENING', 'Opening payable balance')
+    `).run(2, 3200.00, 3200.00);
+
+    // Sample Purchase Inward from Kamat Wholesale
+    database.prepare(`
+      INSERT INTO purchases (
+        invoice_number, supplier_id, total_items, subtotal, tax_amount,
+        grand_total, paid_amount, payment_mode, payment_status, notes, purchase_date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'PUR-DEMO-001', 1, 2, 8600.00, 0.00, 8600.00, 8600.00,
+      'BANK_TRANSFER', 'PAID', 'Delivery of Rice & Sugar bags', '2026-10-24'
+    );
+
+    database.prepare(`
+      INSERT INTO purchase_items (purchase_id, product_id, product_name, quantity, unit, unit_cost_price, line_total)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(1, 1, 'Sona Masoori Rice (Loose)', 100, 'kg', 48.00, 4800.00);
+
+    database.prepare(`
+      INSERT INTO purchase_items (purchase_id, product_id, product_name, quantity, unit, unit_cost_price, line_total)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(1, 2, 'Sugar (Loose)', 100, 'kg', 38.00, 3800.00);
 
     // 5. Sample Bills (Today & Recent)
     const insertBill = database.prepare(`

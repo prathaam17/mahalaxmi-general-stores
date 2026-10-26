@@ -235,3 +235,103 @@ export interface ProductFormData {
   currentStock?: number;
   minStockAlert?: number;
 }
+
+export interface SupplierWithMeta {
+  id: number;
+  name: string;
+  phone: string | null;
+  gstin: string | null;
+  address: string | null;
+  currentBalance: number;
+  totalPurchasesCount: number;
+  lastPurchaseDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface SupplierMetrics {
+  totalSuppliers: number;
+  totalPayableBalance: number;
+  suppliersWithDueCount: number;
+  purchasesThisMonth: number;
+  paymentsMadeThisMonth: number;
+}
+
+export interface SupplierLedgerEntry {
+  id: number;
+  supplierId: number;
+  purchaseId: number | null;
+  invoiceNumber: string | null;
+  entryType: 'CREDIT' | 'DEBIT';
+  amount: number;
+  balanceAfter: number;
+  paymentMode: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface SupplierStatement {
+  supplier: SupplierWithMeta;
+  summary: {
+    totalDeliveries: number;
+    totalPayments: number;
+    currentBalance: number;
+    totalTransactions: number;
+  };
+  entries: SupplierLedgerEntry[];
+}
+
+export interface SupplierFormData {
+  name: string;
+  phone?: string | null;
+  gstin?: string | null;
+  address?: string | null;
+  initialBalance?: number;
+}
+
+export interface PurchaseItemFormData {
+  productId?: number | null;
+  productName: string;
+  quantity: number;
+  unit: string;
+  unitCostPrice: number;
+  lineTotal: number;
+  updateProductCost?: boolean;
+}
+
+export interface PurchaseFormData {
+  supplierId: number;
+  invoiceNumber?: string;
+  purchaseDate?: string;
+  items: PurchaseItemFormData[];
+  paymentMode: 'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CREDIT';
+  paidAmount: number;
+  notes?: string;
+}
+
+export interface PurchaseDetail {
+  id: number;
+  invoiceNumber: string;
+  supplierId: number;
+  supplierName: string;
+  supplierPhone: string | null;
+  totalItems: number;
+  subtotal: number;
+  taxAmount: number;
+  grandTotal: number;
+  paidAmount: number;
+  paymentMode: string;
+  paymentStatus: string;
+  notes: string | null;
+  purchaseDate: string;
+  createdAt: string;
+  items: Array<{
+    id: number;
+    productId: number | null;
+    productName: string;
+    quantity: number;
+    unit: string;
+    unitCostPrice: number;
+    lineTotal: number;
+  }>;
+}

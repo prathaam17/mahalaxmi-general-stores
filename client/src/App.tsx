@@ -3,6 +3,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { BillingPage } from './pages/BillingPage';
 import { ProductsPage } from './pages/ProductsPage';
+import { CustomersPage } from './pages/CustomersPage';
 import { fetchDashboardSummary } from './services/api';
 import type { DashboardSummary, AppModule } from './types';
 import {
@@ -76,6 +77,10 @@ export function App() {
 
     if (activeModule === 'products') {
       return <ProductsPage />;
+    }
+
+    if (activeModule === 'customers') {
+      return <CustomersPage />;
     }
 
     const placeholderConfig = {

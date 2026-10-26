@@ -109,6 +109,52 @@ export interface Customer {
   availableCredit: number;
 }
 
+export interface CustomerWithMeta extends Customer {
+  isOverLimit: boolean;
+  lastTransactionDate: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CustomerMetrics {
+  totalCustomers: number;
+  totalOutstandingBalance: number;
+  customersWithDueCount: number;
+  repaymentsCollectedToday: number;
+}
+
+export interface LedgerEntry {
+  id: number;
+  customerId: number;
+  billId: number | null;
+  billNumber: string | null;
+  entryType: 'DEBIT' | 'CREDIT';
+  amount: number;
+  balanceAfter: number;
+  paymentMode: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CustomerStatement {
+  customer: CustomerWithMeta;
+  summary: {
+    totalDebits: number;
+    totalCredits: number;
+    currentBalance: number;
+    totalTransactions: number;
+  };
+  entries: LedgerEntry[];
+}
+
+export interface CustomerFormData {
+  name: string;
+  phone?: string | null;
+  address?: string | null;
+  creditLimit?: number;
+  initialBalance?: number;
+}
+
 export interface CartItem {
   productId?: number | null;
   barcode?: string | null;

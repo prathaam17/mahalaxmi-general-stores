@@ -6,6 +6,10 @@ import type {
   InventoryMetrics,
   ProductFormData,
   Customer,
+  CustomerWithMeta,
+  CustomerMetrics,
+  CustomerStatement,
+  CustomerFormData,
   CreateBillPayload,
   BillDetail,
 } from '../types';
@@ -30,6 +34,106 @@ export async function checkServerHealth(): Promise<{ status: string; shop: strin
     throw new Error('Server health check failed');
   }
   return response.json();
+}
+
+// ----------------------------------------------------
+// Customers & Udhaar Khata APIs
+// ----------------------------------------------------
+
+export async function fetchCustomersList(search?: string, hasBalance?: boolean): Promise<CustomerWithMeta[]> {
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+  if (hasBalance) params.set('hasBalance', 'true');
+
+  const url = `${API_BASE}/customers?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch customers (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function fetchCustomerMetrics(): Promise<CustomerMetrics> {
+  const response = await fetch(`${API_BASE}/customers/metrics`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch customer metrics (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function createCustomer(data: CustomerFormData): Promise<CustomerWithMeta> {
+  const response = await fetch(`${API_BASE}/customers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to register customer');
+  }
+  return result.data;
+}
+
+export async function updateCustomer(id: number, data: CustomerFormData): Promise<CustomerWithMeta> {
+  const response = await fetch(`${API_BASE}/customers/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to update customer details');
+  }
+  return result.data;
+}
+
+export async function recordCustomerPayment(
+  id: number,
+  amount: number,
+  paymentMode: 'CASH' | 'UPI',
+  notes?: string
+): Promise<{ customer: CustomerWithMeta }> {
+  const response = await fetch(`${API_BASE}/customers/${id}/payments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, paymentMode, notes }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to record payment');
+  }
+  return result.data;
+}
+
+export async function fetchCustomerStatement(
+  id: number,
+  startDate?: string,
+  endDate?: string
+): Promise<CustomerStatement> {
+  const params = new URLSearchParams();
+  if (startDate) params.set('startDate', startDate);
+  if (endDate) params.set('endDate', endDate);
+
+  const url = `${API_BASE}/customers/${id}/statement?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch customer statement (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function deactivateCustomer(id: number): Promise<boolean> {
+  const response = await fetch(`${API_BASE}/customers/${id}`, {
+    method: 'DELETE',
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to deactivate customer');
+  }
+  return true;
 }
 
 // ----------------------------------------------------

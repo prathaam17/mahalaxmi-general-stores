@@ -6,6 +6,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { createDashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { createBillingRouter } from './modules/billing/billing.routes.js';
 import { createProductsRouter } from './modules/products/products.routes.js';
+import { createCustomersRouter } from './modules/customers/customers.routes.js';
 import { getDatabase } from './db/index.js';
 
 export function createApp(): Express {
@@ -44,6 +45,7 @@ export function createApp(): Express {
   app.use('/api/dashboard', createDashboardRouter());
   app.use('/api/billing', createBillingRouter());
   app.use('/api/products', createProductsRouter());
+  app.use('/api/customers', createCustomersRouter());
 
   // 404 handler for API routes
   app.use('/api/*', (_req, res) => {

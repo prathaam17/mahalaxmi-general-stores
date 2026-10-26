@@ -18,6 +18,7 @@ export function seedDemoData(database = getDatabase()): void {
       DELETE FROM purchase_items;
       DELETE FROM purchases;
       DELETE FROM expenses;
+      DELETE FROM daily_cash_register;
       DELETE FROM products;
       DELETE FROM categories;
       DELETE FROM customers;
@@ -176,7 +177,14 @@ export function seedDemoData(database = getDatabase()): void {
     insertExp.run('Tea & Refreshments', 'Morning and evening tea for shopkeeper & helper', 60.00, 'CASH', todayStr);
     insertExp.run('Packaging & Bags', 'Carry bags and packing paper roll', 150.00, 'UPI', todayStr);
 
-    // 8. Audit log initial entries
+    // 8. Daily Cash Register for today (Opening cash of ₹1500 in drawer)
+    database.prepare(`
+      INSERT INTO daily_cash_register (
+        register_date, opening_cash, expected_cash, status, closing_notes
+      ) VALUES (?, ?, ?, 'OPEN', 'Morning cash in drawer for customer change')
+    `).run(todayStr, 1500.00, 1750.00);
+
+    // 9. Audit log initial entries
     const insertLog = database.prepare(`
       INSERT INTO audit_logs (action, entity_type, entity_id, details)
       VALUES (?, ?, ?, ?)

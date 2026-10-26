@@ -18,6 +18,12 @@ import type {
   SupplierFormData,
   PurchaseFormData,
   PurchaseDetail,
+  ExpenseItem,
+  ExpenseMetrics,
+  ExpenseFormData,
+  CashRegisterSummary,
+  CashRegisterDenominations,
+  CashRegisterHistoryItem,
 } from '../types';
 
 const API_BASE = '/api';
@@ -434,6 +440,149 @@ export async function fetchPurchasesList(supplierId?: number, limit?: number): P
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch purchases (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+// ----------------------------------------------------
+// Daily Expenses & Cash Drawer APIs
+// ----------------------------------------------------
+
+export async function fetchExpensesList(filters: {
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  paymentMode?: string;
+} = {}): Promise<ExpenseItem[]> {
+  const params = new URLSearchParams();
+  if (filters.startDate) params.set('startDate', filters.startDate);
+  if (filters.endDate) params.set('endDate', filters.endDate);
+  if (filters.category) params.set('category', filters.category);
+  if (filters.paymentMode) params.set('paymentMode', filters.paymentMode);
+
+  const url = `${API_BASE}/expenses?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch expenses (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function fetchExpenseMetrics(date?: string): Promise<ExpenseMetrics> {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+
+  const url = `${API_BASE}/expenses/metrics?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch expense metrics (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function createExpense(data: ExpenseFormData): Promise<ExpenseItem> {
+  const response = await fetch(`${API_BASE}/expenses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to record expense');
+  }
+  return result.data;
+}
+
+export async function updateExpense(id: number, data: ExpenseFormData & { expenseDate: string }): Promise<ExpenseItem> {
+  const response = await fetch(`${API_BASE}/expenses/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to update expense');
+  }
+  return result.data;
+}
+
+export async function deleteExpense(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE}/expenses/${id}`, {
+    method: 'DELETE',
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to delete expense');
+  }
+}
+
+export async function fetchCashRegister(date?: string): Promise<CashRegisterSummary> {
+  const params = new URLSearchParams();
+  if (date) params.set('date', date);
+
+  const url = `${API_BASE}/expenses/cash-register?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch cash register summary (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function setOpeningCash(date: string, openingCash: number, notes?: string): Promise<CashRegisterSummary> {
+  const response = await fetch(`${API_BASE}/expenses/cash-register/opening`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, openingCash, notes }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to set opening cash');
+  }
+  return result.data;
+}
+
+export async function closeCashRegister(
+  date: string,
+  denominations: CashRegisterDenominations,
+  closingNotes?: string
+): Promise<CashRegisterSummary> {
+  const response = await fetch(`${API_BASE}/expenses/cash-register/close`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, denominations, closingNotes }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to close cash register');
+  }
+  return result.data;
+}
+
+export async function reopenCashRegister(date: string): Promise<CashRegisterSummary> {
+  const response = await fetch(`${API_BASE}/expenses/cash-register/reopen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date }),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to reopen cash register');
+  }
+  return result.data;
+}
+
+export async function fetchCashHistory(limit?: number): Promise<CashRegisterHistoryItem[]> {
+  const params = new URLSearchParams();
+  if (limit) params.set('limit', String(limit));
+
+  const url = `${API_BASE}/expenses/cash-register/history?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch cash drawer history (Status: ${response.status})`);
   }
   const result = await response.json();
   return result.data || [];

@@ -335,3 +335,71 @@ export interface PurchaseDetail {
     lineTotal: number;
   }>;
 }
+
+export interface ExpenseItem {
+  id: number;
+  category: string;
+  description: string;
+  amount: number;
+  paymentMode: 'CASH' | 'UPI' | 'BANK_TRANSFER' | string;
+  expenseDate: string;
+  createdAt: string;
+}
+
+export interface ExpenseMetrics {
+  todayTotal: number;
+  todayCash: number;
+  todayUpi: number;
+  monthTotal: number;
+  topCategory: { category: string; amount: number } | null;
+  byCategory: Array<{ category: string; amount: number; count: number }>;
+}
+
+export interface ExpenseFormData {
+  category: string;
+  description: string;
+  amount: number;
+  paymentMode: 'CASH' | 'UPI' | 'BANK_TRANSFER';
+  expenseDate?: string;
+}
+
+export interface CashRegisterDenominations {
+  note500: number;
+  note200: number;
+  note100: number;
+  note50: number;
+  note20: number;
+  note10: number;
+  coins: number;
+}
+
+export interface CashRegisterSummary {
+  id: number | null;
+  registerDate: string;
+  openingCash: number;
+  cashSales: number;
+  cashUdhaarCollections: number;
+  cashExpenses: number;
+  cashSupplierPayments: number;
+  totalCashIn: number;
+  totalCashOut: number;
+  expectedCash: number;
+  closingCash: number | null;
+  difference: number | null;
+  denominations: CashRegisterDenominations;
+  status: 'OPEN' | 'CLOSED';
+  closingNotes: string | null;
+  closedAt: string | null;
+  createdAt: string | null;
+}
+
+export interface CashRegisterHistoryItem {
+  id: number;
+  registerDate: string;
+  openingCash: number;
+  expectedCash: number;
+  closingCash: number | null;
+  difference: number | null;
+  status: 'OPEN' | 'CLOSED';
+  closedAt: string | null;
+}

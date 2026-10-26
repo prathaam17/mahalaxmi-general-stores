@@ -13,6 +13,7 @@ const updateSettingsSchema = z.object({
   receiptFooter: z.string().optional(),
   gstEnabled: z.boolean().optional(),
   defaultGstRate: z.number().nonnegative().optional(),
+  autoPrintReceipt: z.boolean().optional(),
   isDemoMode: z.boolean().optional(),
 });
 

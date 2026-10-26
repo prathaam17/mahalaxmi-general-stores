@@ -34,7 +34,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         <div className="print:hidden px-4 py-3 bg-stone-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <span className="font-bold text-sm">Bill Completed Successfully</span>
+            <span className="font-bold text-sm">ಮಾರಾಟ ದಾಖಲು (Sale Record & Slip)</span>
           </div>
           <button
             onClick={onClose}
@@ -74,6 +74,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 <span>Bill No:</span>
                 <span className="font-bold">{bill.billNumber}</span>
               </div>
+              {bill.slipNumber && (
+                <div className="flex justify-between text-amber-900 font-bold bg-amber-50 px-1 py-0.5 rounded">
+                  <span>Paper Slip #:</span>
+                  <span>{bill.slipNumber}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Date:</span>
                 <span>{bill.createdAt}</span>

@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     badge?: string;
   }> = [
     { id: 'dashboard', label: 'Dashboard', kannadaLabel: 'ಮುಖಪುಟ', icon: LayoutDashboard },
-    { id: 'billing', label: 'Fast Billing', kannadaLabel: 'ಬಿಲ್ಲಿಂಗ್ (F2)', icon: Receipt, badge: 'F2' },
+    { id: 'billing', label: 'Sales & Billing', kannadaLabel: 'ಮಾರಾಟ ದಾಖಲು (F2)', icon: Receipt, badge: 'F2' },
     { id: 'products', label: 'Products & Stock', kannadaLabel: 'ಸರಕುಗಳು & ದಾಸ್ತಾನು', icon: Package },
     { id: 'customers', label: 'Customers & Udhaar', kannadaLabel: 'ಗ್ರಾಹಕರ ಉದ್ಧಾರ ಖಾತೆ', icon: Users },
     { id: 'suppliers', label: 'Suppliers & Purchases', kannadaLabel: 'ಸರಬರಾಜುದಾರರು', icon: Truck },

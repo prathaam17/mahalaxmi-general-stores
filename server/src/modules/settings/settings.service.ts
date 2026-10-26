@@ -14,6 +14,7 @@ export interface ShopSettingsData {
   receiptFooter: string;
   gstEnabled: boolean;
   defaultGstRate: number;
+  autoPrintReceipt: boolean;
   isDemoMode: boolean;
   updatedAt?: string;
 }
@@ -60,6 +61,7 @@ export class SettingsService {
       receipt_footer: string | null;
       gst_enabled: number;
       default_gst_rate: number;
+      auto_print_receipt: number;
       is_demo_mode: number;
       updated_at: string;
     } | undefined;
@@ -75,6 +77,7 @@ export class SettingsService {
         receiptFooter: 'ಧನ್ಯವಾದಗಳು! ಮತ್ತೆ ಬನ್ನಿ • Thank you, visit again!',
         gstEnabled: false,
         defaultGstRate: 0,
+        autoPrintReceipt: false,
         isDemoMode: true,
       };
     }
@@ -89,6 +92,7 @@ export class SettingsService {
       receiptFooter: row.receipt_footer || 'ಧನ್ಯವಾದಗಳು! ಮತ್ತೆ ಬನ್ನಿ • Thank you, visit again!',
       gstEnabled: Boolean(row.gst_enabled),
       defaultGstRate: Number(row.default_gst_rate) || 0,
+      autoPrintReceipt: Boolean(row.auto_print_receipt),
       isDemoMode: Boolean(row.is_demo_mode),
       updatedAt: row.updated_at,
     };
@@ -106,6 +110,7 @@ export class SettingsService {
     const receiptFooter = data.receiptFooter !== undefined ? data.receiptFooter.trim() : current.receiptFooter;
     const gstEnabled = data.gstEnabled !== undefined ? (data.gstEnabled ? 1 : 0) : (current.gstEnabled ? 1 : 0);
     const defaultGstRate = data.defaultGstRate !== undefined ? Number(data.defaultGstRate) || 0 : current.defaultGstRate;
+    const autoPrintReceipt = data.autoPrintReceipt !== undefined ? (data.autoPrintReceipt ? 1 : 0) : (current.autoPrintReceipt ? 1 : 0);
     const isDemoMode = data.isDemoMode !== undefined ? (data.isDemoMode ? 1 : 0) : (current.isDemoMode ? 1 : 0);
 
     return runInTransaction(this.db, () => {
@@ -121,6 +126,7 @@ export class SettingsService {
           receipt_footer = ?,
           gst_enabled = ?,
           default_gst_rate = ?,
+          auto_print_receipt = ?,
           is_demo_mode = ?,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = 1
@@ -134,6 +140,7 @@ export class SettingsService {
         receiptFooter,
         gstEnabled,
         defaultGstRate,
+        autoPrintReceipt,
         isDemoMode
       );
 

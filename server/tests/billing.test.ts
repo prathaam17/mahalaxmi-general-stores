@@ -43,6 +43,7 @@ describe('Billing Module Service', () => {
 
     const bill = service.createBill({
       paymentMode: 'CASH',
+      slipNumber: 'Book-1-Slip-20',
       cashReceived: 500,
       items: [
         {
@@ -61,6 +62,7 @@ describe('Billing Module Service', () => {
 
     expect(bill.id).toBeDefined();
     expect(bill.billNumber).toMatch(/^MGS-\d{8}-\d{4}$/);
+    expect(bill.slipNumber).toBe('Book-1-Slip-20');
     expect(bill.grandTotal).toBe(140.0);
     expect(bill.cashReceived).toBe(500.0);
     expect(bill.changeReturned).toBe(360.0); // 500 - 140

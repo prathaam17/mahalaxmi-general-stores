@@ -170,6 +170,7 @@ export interface CartItem {
 
 export interface CreateBillPayload {
   customerId?: number | null;
+  slipNumber?: string | null;
   items: Array<{
     productId?: number | null;
     productName: string;
@@ -191,6 +192,7 @@ export interface CreateBillPayload {
 export interface BillDetail {
   id: number;
   billNumber: string;
+  slipNumber?: string | null;
   customerId: number | null;
   customerName?: string | null;
   customerPhone?: string | null;
@@ -475,6 +477,7 @@ export interface ShopSettingsData {
   receiptFooter: string;
   gstEnabled: boolean;
   defaultGstRate: number;
+  autoPrintReceipt?: boolean;
   isDemoMode: boolean;
   updatedAt?: string;
 }

@@ -16,6 +16,7 @@ import {
   Save,
   Check,
   Info,
+  Printer,
 } from 'lucide-react';
 import {
   fetchShopSettings,
@@ -393,6 +394,46 @@ export const SettingsPage: React.FC = () => {
                     <option value={18}>18% (Soaps, Detergents & Household)</option>
                     <option value={28}>28% (Luxury items)</option>
                   </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Billing Style & Handwritten Slip Preferences */}
+            <div className="border-t border-stone-200 pt-6">
+              <h2 className="text-lg font-bold text-stone-900 flex items-center gap-2 mb-1">
+                <Printer className="w-5 h-5 text-amber-600" />
+                <span>ಬಿಲ್ಲಿಂಗ್ ಶೈಲಿ & ರಸೀದಿ (Billing Style & Receipt Mode)</span>
+              </h2>
+              <p className="text-xs text-stone-500 mb-4">
+                Configure how the billing counter operates for handwritten receipts versus thermal printers.
+              </p>
+
+              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 space-y-3 text-xs">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-stone-900 text-sm block">
+                      ಹಸ್ತಪ್ರತಿ ಬಿಲ್ ಶೈಲಿ (Handwritten Paper Bills)
+                    </span>
+                    <p className="text-stone-600 text-xs mt-0.5">
+                      Since your shop uses handwritten paper bills or memo slips, the counter saves sales directly, decrements inventory stock, and updates customer Udhaar and the cash drawer without opening intrusive print popups.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-stone-200 flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="autoPrintReceipt"
+                    checked={Boolean(settings.autoPrintReceipt)}
+                    onChange={(e) => setSettings({ ...settings, autoPrintReceipt: e.target.checked })}
+                    className="w-4 h-4 text-amber-600 rounded border-stone-300 focus:ring-amber-500"
+                  />
+                  <label htmlFor="autoPrintReceipt" className="text-xs font-semibold text-stone-700 cursor-pointer">
+                    Auto-open printable receipt popup after checkout (ರಸೀದಿ ಮುದ್ರಣ ಪಾಪ್-ಅಪ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತೆರೆಯಿರಿ)
+                  </label>
                 </div>
               </div>
             </div>

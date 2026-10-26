@@ -13,6 +13,10 @@ import {
   ShoppingBag,
   AlertCircle,
   RotateCcw,
+  Check,
+  CheckCircle2,
+  X,
+  FileText,
 } from 'lucide-react';
 import { searchProducts, fetchCustomers, createSaleBill } from '../services/api';
 import { LooseGoodsModal } from '../components/billing/LooseGoodsModal';
@@ -31,9 +35,10 @@ export const BillingPage: React.FC = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState<number>(0);
 
-  // Customer
+  // Customer & Handwritten Slip Ref
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [slipNumber, setSlipNumber] = useState<string>('');
 
   // Payment
   const [paymentMode, setPaymentMode] = useState<'CASH' | 'UPI' | 'CREDIT' | 'SPLIT'>('CASH');
@@ -41,10 +46,17 @@ export const BillingPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Modals
+  // Modals & Feedback
   const [isLooseModalOpen, setIsLooseModalOpen] = useState(false);
   const [completedBill, setCompletedBill] = useState<BillDetail | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [lastSaleSuccess, setLastSaleSuccess] = useState<{
+    billNumber: string;
+    slipNumber?: string | null;
+    grandTotal: number;
+    paymentMode: string;
+    customerName?: string | null;
+  } | null>(null);
 
   // Load initial products and customers
   useEffect(() => {
@@ -162,6 +174,7 @@ export const BillingPage: React.FC = () => {
     setDiscount(0);
     setCashTendered('');
     setSelectedCustomerId(null);
+    setSlipNumber('');
     setErrorMessage(null);
     searchInputRef.current?.focus();
   };
@@ -210,6 +223,7 @@ export const BillingPage: React.FC = () => {
 
       const bill = await createSaleBill({
         customerId: selectedCustomerId,
+        slipNumber: slipNumber.trim() || undefined,
         items: cart.map((item) => ({
           productId: item.productId,
           productName: item.productName,
@@ -228,11 +242,20 @@ export const BillingPage: React.FC = () => {
       });
 
       setCompletedBill(bill);
-      setIsReceiptModalOpen(true);
+      setLastSaleSuccess({
+        billNumber: bill.billNumber,
+        slipNumber: bill.slipNumber,
+        grandTotal: bill.grandTotal,
+        paymentMode: bill.paymentMode,
+        customerName: bill.customerName,
+      });
+      setIsReceiptModalOpen(false); // Handwritten billing: No intrusive popup!
       handleClearCart();
+      setSlipNumber('');
 
       // Refresh customers list to reflect updated Udhaar balances
       fetchCustomers('').then((data) => setCustomers(data));
+      searchInputRef.current?.focus();
     } catch (err: unknown) {
       console.error('Sale completion error:', err);
       setErrorMessage(err instanceof Error ? err.message : 'Failed to record sale bill.');
@@ -261,6 +284,52 @@ export const BillingPage: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Success Notification for Handwritten Billing */}
+      {lastSaleSuccess && (
+        <div className="p-3 bg-emerald-50 border border-emerald-300 text-emerald-950 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs animate-in fade-in duration-150">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center shrink-0">
+              <Check className="w-4 h-4 font-bold" />
+            </div>
+            <div>
+              <div className="font-bold text-xs sm:text-sm text-emerald-950 flex flex-wrap items-center gap-2">
+                <span>ಮಾರಾಟ ಯಶಸ್ವಿಯಾಗಿ ದಾಖಲಾಗಿದೆ (Sale Saved)!</span>
+                <span className="font-mono text-[11px] bg-emerald-200/70 text-emerald-900 px-2 py-0.5 rounded font-semibold">
+                  {lastSaleSuccess.billNumber}
+                </span>
+                {lastSaleSuccess.slipNumber && (
+                  <span className="font-mono text-[11px] bg-amber-100 text-amber-900 px-2 py-0.5 rounded font-semibold border border-amber-200">
+                    ಚೀಟಿ: {lastSaleSuccess.slipNumber}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-emerald-700 mt-0.5">
+                ₹{lastSaleSuccess.grandTotal.toFixed(2)} ({lastSaleSuccess.paymentMode}) {lastSaleSuccess.customerName ? `• ${lastSaleSuccess.customerName}` : ''} • ದಾಸ್ತಾನು ಮತ್ತು ನಗದು ದಾಖಲು ನವೀಕರಿಸಲಾಗಿದೆ (Stock & drawer updated).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsReceiptModalOpen(true)}
+              className="px-2.5 py-1 text-xs bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold rounded-lg transition-colors flex items-center gap-1 shadow-2xs"
+              title="View or print receipt slip if customer requests"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>ರಸೀದಿ ನೋಡಿ (View Slip)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLastSaleSuccess(null)}
+              className="p-1 hover:bg-emerald-200 rounded text-emerald-700 transition-colors"
+              title="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 1. Header Notification / Error */}
       {errorMessage && (
         <div className="p-3.5 bg-rose-50 border border-rose-300 text-rose-800 rounded-xl flex items-center justify-between gap-3 text-xs font-medium animate-in fade-in duration-100">
@@ -540,6 +609,24 @@ export const BillingPage: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* Handwritten Slip Reference (Optional for paper bill books) */}
+            <div className="pt-2 border-t border-stone-100 space-y-1">
+              <label className="text-[11px] font-semibold text-stone-600 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-stone-400" />
+                  <span>ಹಸ್ತಪ್ರತಿ ಚೀಟಿ ಸಂಖ್ಯೆ (Slip # - Optional)</span>
+                </span>
+                <span className="text-[10px] text-stone-400">Paper Bill Book</span>
+              </label>
+              <input
+                type="text"
+                value={slipNumber}
+                onChange={(e) => setSlipNumber(e.target.value)}
+                placeholder="e.g. Slip #42, Book 2/15..."
+                className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-mono placeholder:text-stone-400 focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-200"
+              />
+            </div>
           </div>
 
           {/* 2. Bill Summary & Grand Total */}
@@ -703,20 +790,23 @@ export const BillingPage: React.FC = () => {
             type="button"
             onClick={handleCompleteSale}
             disabled={isSubmitting || cart.length === 0}
-            className="w-full py-4 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-stone-950 font-black text-base shadow-md transition-all flex items-center justify-center gap-2 focus:ring-4 focus:ring-amber-300"
+            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-stone-950 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 focus:ring-4 focus:ring-amber-300"
           >
             {isSubmitting ? (
               <div className="w-5 h-5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>
-                <Printer className="w-5 h-5 text-stone-950" />
-                <span>Complete & Print Bill</span>
-                <span className="text-xs font-mono font-bold bg-amber-600/50 px-2 py-0.5 rounded">
+                <CheckCircle2 className="w-5 h-5 text-stone-950" />
+                <span>ಮಾರಾಟ ದಾಖಲಿಸಿ (Save Sale & Next)</span>
+                <span className="text-xs font-mono font-bold bg-amber-600/40 text-stone-950 px-2 py-0.5 rounded">
                   F9
                 </span>
               </>
             )}
           </button>
+          <p className="text-[11px] text-center text-stone-500">
+            ✓ ಹಸ್ತಪ್ರತಿ ಬಿಲ್ ಮೋಡ್ (Handwritten Bill Mode): Instantly updates stock, cash & Udhaar without print popups.
+          </p>
         </div>
       </div>
 

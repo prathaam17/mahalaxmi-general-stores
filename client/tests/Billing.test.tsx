@@ -86,6 +86,7 @@ describe('Billing Module Components', () => {
     const mockBill: BillDetail = {
       id: 10,
       billNumber: 'MGS-20261025-0004',
+      slipNumber: 'Slip #42',
       customerId: 1,
       customerName: 'Ganesh Naik',
       customerPhone: '+91 94812 34567',
@@ -147,6 +148,7 @@ describe('Billing Module Components', () => {
 
     // Verify Bill Meta
     expect(screen.getByText('MGS-20261025-0004')).toBeInTheDocument();
+    expect(screen.getByText('Slip #42')).toBeInTheDocument();
     expect(screen.getByText('Ganesh Naik')).toBeInTheDocument();
 
     // Verify Line Items

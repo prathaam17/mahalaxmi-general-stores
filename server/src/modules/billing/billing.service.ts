@@ -17,6 +17,7 @@ export interface CreateBillInput {
   discount?: number;
   taxAmount?: number;
   paymentMode: 'CASH' | 'UPI' | 'CREDIT' | 'SPLIT';
+  slipNumber?: string | null;
   cashReceived?: number;
   upiReceived?: number;
   creditAdded?: number;
@@ -26,6 +27,7 @@ export interface CreateBillInput {
 export interface BillDetail {
   id: number;
   billNumber: string;
+  slipNumber: string | null;
   customerId: number | null;
   customerName?: string | null;
   customerPhone?: string | null;
@@ -287,14 +289,15 @@ export class BillingService {
       // 1. Insert bill header
       const insertBillStmt = this.db.prepare(`
         INSERT INTO bills (
-          bill_number, customer_id, total_items, subtotal, discount,
+          bill_number, slip_number, customer_id, total_items, subtotal, discount,
           tax_amount, grand_total, payment_mode, cash_received, upi_received,
           credit_added, change_returned, payment_status, notes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       insertBillStmt.run(
         billNumber,
+        input.slipNumber ? input.slipNumber.trim() : null,
         input.customerId || null,
         input.items.length,
         subtotal,
@@ -403,6 +406,7 @@ export class BillingService {
       SELECT
         b.id,
         b.bill_number as billNumber,
+        b.slip_number as slipNumber,
         b.customer_id as customerId,
         c.name as customerName,
         c.phone as customerPhone,
@@ -428,6 +432,7 @@ export class BillingService {
     `).get(billId) as {
       id: number;
       billNumber: string;
+      slipNumber: string | null;
       customerId: number | null;
       customerName: string | null;
       customerPhone: string | null;

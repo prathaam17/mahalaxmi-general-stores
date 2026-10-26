@@ -14,6 +14,7 @@ const cartItemSchema = z.object({
 
 const createBillSchema = z.object({
   customerId: z.number().nullable().optional(),
+  slipNumber: z.string().nullable().optional(),
   items: z.array(cartItemSchema).min(1, 'At least one item is required in the bill'),
   discount: z.number().nonnegative().optional().default(0),
   taxAmount: z.number().nonnegative().optional().default(0),

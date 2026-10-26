@@ -9,6 +9,7 @@ import { createProductsRouter } from './modules/products/products.routes.js';
 import { createCustomersRouter } from './modules/customers/customers.routes.js';
 import { createSuppliersRouter } from './modules/suppliers/suppliers.routes.js';
 import { createExpensesRouter } from './modules/expenses/expenses.routes.js';
+import { createReportsRouter } from './modules/reports/reports.routes.js';
 import { getDatabase } from './db/index.js';
 
 export function createApp(): Express {
@@ -50,6 +51,7 @@ export function createApp(): Express {
   app.use('/api/customers', createCustomersRouter());
   app.use('/api/suppliers', createSuppliersRouter());
   app.use('/api/expenses', createExpensesRouter());
+  app.use('/api/reports', createReportsRouter());
 
   // 404 handler for API routes
   app.use('/api/*', (_req, res) => {

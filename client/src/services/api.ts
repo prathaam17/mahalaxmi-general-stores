@@ -24,6 +24,7 @@ import type {
   CashRegisterSummary,
   CashRegisterDenominations,
   CashRegisterHistoryItem,
+  SalesReportSummary,
 } from '../types';
 
 const API_BASE = '/api';
@@ -586,4 +587,30 @@ export async function fetchCashHistory(limit?: number): Promise<CashRegisterHist
   }
   const result = await response.json();
   return result.data || [];
+}
+
+// ----------------------------------------------------
+// Sales & Profit Reports APIs
+// ----------------------------------------------------
+
+export async function fetchSalesReport(params: {
+  startDate?: string;
+  endDate?: string;
+  period?: 'today' | 'week' | 'month' | 'year' | 'custom';
+} = {}): Promise<SalesReportSummary> {
+  const searchParams = new URLSearchParams();
+  if (params.startDate) searchParams.set('startDate', params.startDate);
+  if (params.endDate) searchParams.set('endDate', params.endDate);
+  if (params.period) searchParams.set('period', params.period);
+
+  const url = `${API_BASE}/reports/sales?${searchParams.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch sales report (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message || 'Failed to load sales report');
+  }
+  return result.data;
 }

@@ -6,6 +6,7 @@ import { ProductsPage } from './pages/ProductsPage';
 import { CustomersPage } from './pages/CustomersPage';
 import { SuppliersPage } from './pages/SuppliersPage';
 import { ExpensesPage } from './pages/ExpensesPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { fetchDashboardSummary } from './services/api';
 import type { DashboardSummary, AppModule } from './types';
 import {
@@ -91,6 +92,10 @@ export function App() {
 
     if (activeModule === 'expenses') {
       return <ExpensesPage />;
+    }
+
+    if (activeModule === 'reports') {
+      return <ReportsPage />;
     }
 
     const placeholderConfig = {

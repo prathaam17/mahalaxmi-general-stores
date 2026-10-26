@@ -403,3 +403,64 @@ export interface CashRegisterHistoryItem {
   status: 'OPEN' | 'CLOSED';
   closedAt: string | null;
 }
+
+export interface DailyTrendItem {
+  date: string;
+  totalSales: number;
+  totalBills: number;
+  cogs: number;
+  grossProfit: number;
+  expenses: number;
+  netProfit: number;
+}
+
+export interface TopProductItem {
+  productId: number | null;
+  productName: string;
+  unit: string;
+  quantitySold: number;
+  totalRevenue: number;
+  totalCost: number;
+  grossProfit: number;
+  profitMarginPercent: number;
+}
+
+export interface CategorySalesItem {
+  categoryName: string;
+  quantitySold: number;
+  totalRevenue: number;
+  grossProfit: number;
+}
+
+export interface PaymentBreakdown {
+  cashAmount: number;
+  upiAmount: number;
+  creditAmount: number;
+  cashPercent: number;
+  upiPercent: number;
+  creditPercent: number;
+}
+
+export interface SalesReportSummary {
+  period: string;
+  startDate: string;
+  endDate: string;
+  metrics: {
+    totalGrossSales: number;
+    totalDiscount: number;
+    totalNetSales: number;
+    totalBillsCount: number;
+    totalItemsSold: number;
+    cogs: number;
+    estimatedGrossProfit: number;
+    grossMarginPercent: number;
+    totalOperatingExpenses: number;
+    estimatedNetProfit: number;
+    netMarginPercent: number;
+    averageBillValue: number;
+  };
+  payments: PaymentBreakdown;
+  dailyTrends: DailyTrendItem[];
+  topProducts: TopProductItem[];
+  categoryBreakdown: CategorySalesItem[];
+}

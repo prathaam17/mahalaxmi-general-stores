@@ -25,6 +25,9 @@ import type {
   CashRegisterDenominations,
   CashRegisterHistoryItem,
   SalesReportSummary,
+  ShopSettingsData,
+  DatabaseStatusInfo,
+  AuditLogEntry,
 } from '../types';
 
 const API_BASE = '/api';
@@ -611,6 +614,74 @@ export async function fetchSalesReport(params: {
   const result = await response.json();
   if (!result.success || !result.data) {
     throw new Error(result.error?.message || 'Failed to load sales report');
+  }
+  return result.data;
+}
+
+// ----------------------------------------------------
+// Shop Settings, Database Backup & Audit Trail APIs
+// ----------------------------------------------------
+
+export async function fetchShopSettings(): Promise<ShopSettingsData> {
+  const response = await fetch(`${API_BASE}/settings`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch shop settings (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function updateShopSettings(data: Partial<ShopSettingsData>): Promise<ShopSettingsData> {
+  const response = await fetch(`${API_BASE}/settings`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to update shop settings');
+  }
+  return result.data;
+}
+
+export async function fetchDatabaseStatus(): Promise<DatabaseStatusInfo> {
+  const response = await fetch(`${API_BASE}/settings/status`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch database status (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data;
+}
+
+export async function fetchAuditLogs(filters: { search?: string; action?: string; limit?: number } = {}): Promise<AuditLogEntry[]> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.action) params.set('action', filters.action);
+  if (filters.limit) params.set('limit', String(filters.limit));
+
+  const url = `${API_BASE}/settings/audit?${params.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch audit logs (Status: ${response.status})`);
+  }
+  const result = await response.json();
+  return result.data || [];
+}
+
+export async function restoreDatabaseBackup(file: File): Promise<{ success: boolean; message: string }> {
+  const arrayBuffer = await file.arrayBuffer();
+
+  const response = await fetch(`${API_BASE}/settings/restore`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+    },
+    body: arrayBuffer,
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.success) {
+    throw new Error(result.error?.message || 'Failed to restore database from file');
   }
   return result.data;
 }

@@ -464,3 +464,35 @@ export interface SalesReportSummary {
   topProducts: TopProductItem[];
   categoryBreakdown: CategorySalesItem[];
 }
+
+export interface ShopSettingsData {
+  shopName: string;
+  tagline: string;
+  address: string;
+  phone: string;
+  gstin: string;
+  currencySymbol: string;
+  receiptFooter: string;
+  gstEnabled: boolean;
+  defaultGstRate: number;
+  isDemoMode: boolean;
+  updatedAt?: string;
+}
+
+export interface DatabaseStatusInfo {
+  dbPath: string;
+  sizeBytes: number;
+  walSizeBytes: number;
+  isWalMode: boolean;
+  sqliteVersion: string;
+  lastModified: string | null;
+}
+
+export interface AuditLogEntry {
+  id: number;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  details: string;
+  createdAt: string;
+}

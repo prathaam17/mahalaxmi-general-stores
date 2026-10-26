@@ -59,3 +59,27 @@ export function runInTransaction<T>(db: DatabaseSync, action: () => T): T {
     throw err;
   }
 }
+
+/**
+ * Flush all WAL logs into the main database file on disk.
+ */
+export function checkpointDatabase(db?: DatabaseSync): void {
+  const target = db || getDatabase();
+  target.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+}
+
+/**
+ * Closes the active singleton database connection.
+ */
+export function closeDatabase(): void {
+  if (dbInstance) {
+    try {
+      dbInstance.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+      dbInstance.close();
+    } catch {
+      // Ignore if already closed
+    } finally {
+      dbInstance = null;
+    }
+  }
+}

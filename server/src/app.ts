@@ -1,5 +1,8 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { config } from './config/index.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -12,6 +15,9 @@ import { createExpensesRouter } from './modules/expenses/expenses.routes.js';
 import { createReportsRouter } from './modules/reports/reports.routes.js';
 import { createSettingsRouter } from './modules/settings/settings.routes.js';
 import { getDatabase } from './db/index.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function createApp(): Express {
   const app = express();
@@ -59,6 +65,18 @@ export function createApp(): Express {
   app.use('/api/*', (_req, res) => {
     res.status(404).json({ success: false, error: { message: 'API route not found' } });
   });
+
+  // Serve compiled React frontend in production / standalone single-server mode
+  const clientDist = path.resolve(__dirname, '../../client/dist');
+  if (fs.existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      res.sendFile(path.join(clientDist, 'index.html'));
+    });
+  }
 
   // Centralized Error handler
   app.use(errorHandler);

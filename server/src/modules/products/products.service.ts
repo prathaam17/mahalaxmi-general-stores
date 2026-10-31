@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { getDatabase, runInTransaction } from '../../db/index.js';
+import { expandSearchKeywords } from '../../utils/kannadaSearch.js';
 
 export interface ProductFilter {
   search?: string;
@@ -20,6 +21,7 @@ export interface CreateProductInput {
   mrp?: number;
   currentStock: number;
   minStockAlert: number;
+  searchKeywords?: string | null;
 }
 
 export interface UpdateProductInput {
@@ -33,6 +35,7 @@ export interface UpdateProductInput {
   sellingPrice: number;
   mrp?: number;
   minStockAlert: number;
+  searchKeywords?: string | null;
 }
 
 export interface ProductWithCategory {
@@ -40,6 +43,7 @@ export interface ProductWithCategory {
   barcode: string | null;
   name: string;
   kannadaName: string | null;
+  searchKeywords?: string | null;
   categoryId: number | null;
   categoryName: string | null;
   isLoose: boolean;
@@ -110,11 +114,35 @@ export class ProductsService {
   getProducts(filters: ProductFilter = {}): ProductWithCategory[] {
     const conditions: string[] = ['p.is_active = 1'];
     const params: Array<string | number | null | bigint | Uint8Array> = [];
+    let orderByClause = 'ORDER BY p.name ASC';
+    const orderParams: Array<string | number | null | bigint | Uint8Array> = [];
 
     if (filters.search && filters.search.trim()) {
-      const q = `%${filters.search.trim()}%`;
-      conditions.push('(p.barcode = ? OR p.name LIKE ? OR p.kannada_name LIKE ?)');
-      params.push(filters.search.trim(), q, q);
+      const trimmed = filters.search.trim();
+      const tokens = expandSearchKeywords(trimmed);
+      const orClauses: string[] = ['p.barcode = ?'];
+      params.push(trimmed);
+
+      for (const token of tokens) {
+        orClauses.push('(p.name LIKE ? OR p.kannada_name LIKE ? OR p.search_keywords LIKE ?)');
+        const likeStr = `%${token}%`;
+        params.push(likeStr, likeStr, likeStr);
+      }
+      conditions.push(`(${orClauses.join(' OR ')})`);
+
+      const directLike = `%${trimmed.toLowerCase()}%`;
+      orderByClause = `
+        ORDER BY
+          CASE
+            WHEN p.barcode = ? THEN 0
+            WHEN LOWER(p.name) LIKE ? THEN 1
+            WHEN LOWER(p.kannada_name) LIKE ? THEN 2
+            WHEN LOWER(COALESCE(p.search_keywords, '')) LIKE ? THEN 3
+            ELSE 4
+          END,
+          p.name ASC
+      `;
+      orderParams.push(trimmed, directLike, directLike, directLike);
     }
 
     if (filters.categoryId) {
@@ -143,6 +171,7 @@ export class ProductsService {
         p.barcode,
         p.name,
         p.kannada_name as kannadaName,
+        p.search_keywords as searchKeywords,
         p.category_id as categoryId,
         c.name as categoryName,
         p.is_loose as isLoose,
@@ -158,14 +187,16 @@ export class ProductsService {
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE ${whereClause}
-      ORDER BY p.name ASC
+      ${orderByClause}
     `;
 
-    const rows = this.db.prepare(sql).all(...params) as Array<{
+    const allParams = [...params, ...orderParams];
+    const rows = this.db.prepare(sql).all(...allParams) as Array<{
       id: number;
       barcode: string | null;
       name: string;
       kannadaName: string | null;
+      searchKeywords: string | null;
       categoryId: number | null;
       categoryName: string | null;
       isLoose: number;
@@ -195,6 +226,7 @@ export class ProductsService {
 
       return {
         ...r,
+        searchKeywords: r.searchKeywords || null,
         isLoose: Boolean(r.isLoose),
         isActive: Boolean(r.isActive),
         stockStatus,
@@ -267,8 +299,8 @@ export class ProductsService {
       const stmt = this.db.prepare(`
         INSERT INTO products (
           barcode, name, kannada_name, category_id, is_loose, unit,
-          cost_price, selling_price, mrp, current_stock, min_stock_alert
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          cost_price, selling_price, mrp, current_stock, min_stock_alert, search_keywords
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run(
@@ -282,7 +314,8 @@ export class ProductsService {
         Number(input.sellingPrice || 0),
         Number(input.mrp || input.sellingPrice || 0),
         Number(input.currentStock || 0),
-        Number(input.minStockAlert || 5)
+        Number(input.minStockAlert || 5),
+        input.searchKeywords?.trim() || null
       );
 
       const inserted = this.db.prepare('SELECT id FROM products WHERE name = ? ORDER BY id DESC LIMIT 1').get(name) as { id: number };
@@ -302,7 +335,11 @@ export class ProductsService {
   }
 
   updateProduct(id: number, input: UpdateProductInput): ProductWithCategory {
-    const existing = this.db.prepare('SELECT id, name FROM products WHERE id = ?').get(id) as { id: number; name: string } | undefined;
+    const existing = this.db.prepare('SELECT id, name, search_keywords FROM products WHERE id = ?').get(id) as {
+      id: number;
+      name: string;
+      search_keywords: string | null;
+    } | undefined;
     if (!existing) {
       throw new Error(`Product with ID ${id} not found.`);
     }
@@ -320,6 +357,9 @@ export class ProductsService {
       }
     }
 
+    const searchKeywordsToSave =
+      input.searchKeywords !== undefined ? (input.searchKeywords?.trim() || null) : existing.search_keywords;
+
     return runInTransaction(this.db, () => {
       const stmt = this.db.prepare(`
         UPDATE products
@@ -333,6 +373,7 @@ export class ProductsService {
             selling_price = ?,
             mrp = ?,
             min_stock_alert = ?,
+            search_keywords = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `);
@@ -348,6 +389,7 @@ export class ProductsService {
         Number(input.sellingPrice || 0),
         Number(input.mrp || input.sellingPrice || 0),
         Number(input.minStockAlert || 5),
+        searchKeywordsToSave,
         id
       );
 

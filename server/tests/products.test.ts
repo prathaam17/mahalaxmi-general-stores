@@ -66,10 +66,20 @@ describe('Products and Inventory Service', () => {
   });
 
   it('filters products by search, category, and stock status', () => {
-    // Search filter
+    // Search filter by exact name
     const riceResults = service.getProducts({ search: 'Sona Masoori' });
     expect(riceResults.length).toBe(1);
     expect(riceResults[0].name).toContain('Rice');
+
+    // Phonetic search filter: typing "sakkare" finds Sugar
+    const sugarResults = service.getProducts({ search: 'sakkare' });
+    expect(sugarResults.length).toBeGreaterThan(0);
+    expect(sugarResults[0].name).toContain('Sugar');
+
+    // Phonetic search filter: typing "akki" finds Rice
+    const akkiResults = service.getProducts({ search: 'akki' });
+    expect(akkiResults.length).toBeGreaterThan(0);
+    expect(akkiResults[0].name).toContain('Rice');
 
     // Loose goods filter
     const looseResults = service.getProducts({ isLoose: true });

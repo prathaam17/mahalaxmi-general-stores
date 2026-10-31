@@ -6,6 +6,7 @@ const productSchema = z.object({
   barcode: z.string().nullable().optional(),
   name: z.string().min(1, 'Product name is required'),
   kannadaName: z.string().nullable().optional(),
+  searchKeywords: z.string().nullable().optional(),
   categoryId: z.number().nullable().optional(),
   isLoose: z.boolean().default(false),
   unit: z.string().min(1, 'Unit is required'),

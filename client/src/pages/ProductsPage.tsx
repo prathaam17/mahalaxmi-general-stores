@@ -225,7 +225,7 @@ export const ProductsPage: React.FC = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search product name, Kannada name, or barcode..."
+              placeholder="Search name, Kanglish (e.g. sakkare, akki, bella), Kannada, or barcode..."
               className="w-full pl-9 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg text-xs font-medium focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-300"
             />
           </div>

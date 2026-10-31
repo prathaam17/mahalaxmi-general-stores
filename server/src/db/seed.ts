@@ -42,27 +42,27 @@ export function seedDemoData(database = getDatabase()): void {
     const insertProd = database.prepare(`
       INSERT INTO products (
         barcode, name, kannada_name, category_id, is_loose, unit,
-        cost_price, selling_price, mrp, current_stock, min_stock_alert
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        cost_price, selling_price, mrp, current_stock, min_stock_alert, search_keywords
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     // Loose goods (sold by weight/kg)
-    insertProd.run('LOOSE-001', 'Sona Masoori Rice (Loose)', 'ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ', cats['Grains & Pulses'], 1, 'kg', 48.00, 56.00, 60.00, 245.50, 50.00);
-    insertProd.run('LOOSE-002', 'Sugar (Loose)', 'ಸಕ್ಕರೆ', cats['Grains & Pulses'], 1, 'kg', 38.00, 44.00, 46.00, 180.00, 40.00);
-    insertProd.run('LOOSE-003', 'Toor Dal Premium (Loose)', 'ತೊಗರಿ ಬೇಳೆ', cats['Grains & Pulses'], 1, 'kg', 142.00, 160.00, 170.00, 45.20, 25.00);
-    insertProd.run('LOOSE-004', 'Jaggery / Bellada Achhu', 'ಬೆಲ್ಲದ ಅಚ್ಚು', cats['Grains & Pulses'], 1, 'kg', 52.00, 62.00, 65.00, 14.00, 20.00); // Low stock alert!
-    insertProd.run('LOOSE-005', 'Groundnut Seeds (Loose)', 'ಕಡಲೆಕಾಯಿ ಬೀಜ', cats['Grains & Pulses'], 1, 'kg', 115.00, 130.00, 140.00, 32.00, 15.00);
+    insertProd.run('LOOSE-001', 'Sona Masoori Rice (Loose)', 'ಸೋನಾ ಮಸೂರಿ ಅಕ್ಕಿ', cats['Grains & Pulses'], 1, 'kg', 48.00, 56.00, 60.00, 245.50, 50.00, 'akki, sona, masoori, rice, chawal, bhatta, tandula');
+    insertProd.run('LOOSE-002', 'Sugar (Loose)', 'ಸಕ್ಕರೆ', cats['Grains & Pulses'], 1, 'kg', 38.00, 44.00, 46.00, 180.00, 40.00, 'sakkare, sakare, sugar, cheeni, chini');
+    insertProd.run('LOOSE-003', 'Toor Dal Premium (Loose)', 'ತೊಗರಿ ಬೇಳೆ', cats['Grains & Pulses'], 1, 'kg', 142.00, 160.00, 170.00, 45.20, 25.00, 'togari, bele, toor, dal, tuvar, dhal');
+    insertProd.run('LOOSE-004', 'Jaggery / Bellada Achhu', 'ಬೆಲ್ಲದ ಅಚ್ಚು', cats['Grains & Pulses'], 1, 'kg', 52.00, 62.00, 65.00, 14.00, 20.00, 'bella, bellam, bellada, achhu, jaggery, gur'); // Low stock alert!
+    insertProd.run('LOOSE-005', 'Groundnut Seeds (Loose)', 'ಕಡಲೆಕಾಯಿ ಬೀಜ', cats['Grains & Pulses'], 1, 'kg', 115.00, 130.00, 140.00, 32.00, 15.00, 'kadalekayi, shenga, kadale, groundnut, peanut');
 
     // Packaged goods
-    insertProd.run('8901030383112', 'Nandini Toned Milk 500ml', 'ನಂದಿನಿ ನೀಲಿ ಹಾಲು', cats['Dairy & Fresh'], 0, 'packet', 23.50, 25.00, 25.00, 18.00, 10.00);
-    insertProd.run('8901030383999', 'Nandini Pure Ghee 200ml', 'ನಂದಿನಿ ಶುದ್ಧ ತುಪ್ಪ', cats['Oils & Ghee'], 0, 'packet', 128.00, 140.00, 140.00, 8.00, 10.00); // Low stock alert!
-    insertProd.run('8901030001000', 'Tata Salt 1kg', 'ಟಾಟಾ ಉಪ್ಪು', cats['Spices & Masala'], 0, 'packet', 24.00, 28.00, 28.00, 65.00, 15.00);
-    insertProd.run('8901030002001', 'Gemini Sunflower Oil 1L Pouch', 'ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ', cats['Oils & Ghee'], 0, 'packet', 122.00, 136.00, 145.00, 34.00, 12.00);
-    insertProd.run('8901719101010', 'Parle-G Gold Biscuit 250g', 'ಪಾರ್ಲೆ-ಜಿ ಬಿಸ್ಕತ್ತು', cats['Snacks & Beverages'], 0, 'packet', 25.00, 30.00, 30.00, 48.00, 12.00);
-    insertProd.run('8901030588200', 'Red Label Tea 250g', 'ರೆಡ್ ಲೇಬಲ್ ಚಹಾ ಪುಡಿ', cats['Snacks & Beverages'], 0, 'packet', 115.00, 130.00, 135.00, 22.00, 8.00);
-    insertProd.run('8901030691230', 'Surf Excel Quick Wash 500g', 'ಸರ್ಫ್ ಎಕ್ಸೆಲ್', cats['Soaps & Detergents'], 0, 'packet', 85.00, 95.00, 100.00, 26.00, 10.00);
-    insertProd.run('8901030784560', 'Mysore Sandal Soap 75g', 'ಮೈಸೂರು ಸ್ಯಾಂಡಲ್ ಸೋಪು', cats['Soaps & Detergents'], 0, 'piece', 42.00, 48.00, 48.00, 3.00, 10.00); // Low stock alert!
-    insertProd.run('8901030897650', 'Dettol Original Soap 75g', 'ಡೆಟ್ಟಾಲ್ ಸೋಪ್', cats['Soaps & Detergents'], 0, 'piece', 34.00, 40.00, 40.00, 30.00, 10.00);
+    insertProd.run('8901030383112', 'Nandini Toned Milk 500ml', 'ನಂದಿನಿ ನೀಲಿ ಹಾಲು', cats['Dairy & Fresh'], 0, 'packet', 23.50, 25.00, 25.00, 18.00, 10.00, 'haalu, halu, doodh, milk, nandini, neeli haalu');
+    insertProd.run('8901030383999', 'Nandini Pure Ghee 200ml', 'ನಂದಿನಿ ಶುದ್ಧ ತುಪ್ಪ', cats['Oils & Ghee'], 0, 'packet', 128.00, 140.00, 140.00, 8.00, 10.00, 'tuppa, thuppa, ghee, tup, nandini'); // Low stock alert!
+    insertProd.run('8901030001000', 'Tata Salt 1kg', 'ಟಾಟಾ ಉಪ್ಪು', cats['Spices & Masala'], 0, 'packet', 24.00, 28.00, 28.00, 65.00, 15.00, 'uppu, namak, salt, tata');
+    insertProd.run('8901030002001', 'Gemini Sunflower Oil 1L Pouch', 'ಸೂರ್ಯಕಾಂತಿ ಎಣ್ಣೆ', cats['Oils & Ghee'], 0, 'packet', 122.00, 136.00, 145.00, 34.00, 12.00, 'enne, yenne, sooryakanthi, oil, tel, gemini');
+    insertProd.run('8901719101010', 'Parle-G Gold Biscuit 250g', 'ಪಾರ್ಲೆ-ಜಿ ಬಿಸ್ಕತ್ತು', cats['Snacks & Beverages'], 0, 'packet', 25.00, 30.00, 30.00, 48.00, 12.00, 'biskath, biskit, biscuit, parle');
+    insertProd.run('8901030588200', 'Red Label Tea 250g', 'ರೆಡ್ ಲೇಬಲ್ ಚಹಾ ಪುಡಿ', cats['Snacks & Beverages'], 0, 'packet', 115.00, 130.00, 135.00, 22.00, 8.00, 'chaha, cha, chai, tea, red label');
+    insertProd.run('8901030691230', 'Surf Excel Quick Wash 500g', 'ಸರ್ಫ್ ಎಕ್ಸೆಲ್', cats['Soaps & Detergents'], 0, 'packet', 85.00, 95.00, 100.00, 26.00, 10.00, 'surf, detergent, soap powder, washing');
+    insertProd.run('8901030784560', 'Mysore Sandal Soap 75g', 'ಮೈಸೂರು ಸ್ಯಾಂಡಲ್ ಸೋಪು', cats['Soaps & Detergents'], 0, 'piece', 42.00, 48.00, 48.00, 3.00, 10.00, 'sopu, soapu, soap, sabu, mysore sandal'); // Low stock alert!
+    insertProd.run('8901030897650', 'Dettol Original Soap 75g', 'ಡೆಟ್ಟಾಲ್ ಸೋಪ್', cats['Soaps & Detergents'], 0, 'piece', 34.00, 40.00, 40.00, 30.00, 10.00, 'sopu, soap, sabu, dettol');
 
     // 3. Customers (Local residents of Honnavar with Udhaar accounts)
     const insertCust = database.prepare(`

@@ -34,6 +34,38 @@ describe('Billing Module Service', () => {
     expect(sugar[0].name).toContain('Sugar');
   });
 
+  it('searches products phonetically using Kanglish (Kannada typed in English alphabet)', () => {
+    // 1. "sakkare" should find Sugar
+    const sugarMatches = service.searchProducts('sakkare');
+    expect(sugarMatches.length).toBeGreaterThan(0);
+    expect(sugarMatches[0].name).toContain('Sugar');
+
+    // 2. "akki" should find Rice
+    const riceMatches = service.searchProducts('akki');
+    expect(riceMatches.length).toBeGreaterThan(0);
+    expect(riceMatches[0].name).toContain('Rice');
+
+    // 3. "haalu" should find Milk
+    const milkMatches = service.searchProducts('haalu');
+    expect(milkMatches.length).toBeGreaterThan(0);
+    expect(milkMatches[0].name).toContain('Milk');
+
+    // 4. "tuppa" should find Ghee
+    const gheeMatches = service.searchProducts('tuppa');
+    expect(gheeMatches.length).toBeGreaterThan(0);
+    expect(gheeMatches[0].name).toContain('Ghee');
+
+    // 5. "bella" should find Jaggery
+    const jaggeryMatches = service.searchProducts('bella');
+    expect(jaggeryMatches.length).toBeGreaterThan(0);
+    expect(jaggeryMatches[0].name).toContain('Jaggery');
+
+    // 6. "uppu" should find Salt
+    const saltMatches = service.searchProducts('uppu');
+    expect(saltMatches.length).toBeGreaterThan(0);
+    expect(saltMatches[0].name).toContain('Salt');
+  });
+
   it('creates a Cash bill and deducts inventory stock accurately', () => {
     // Initial stock of Sona Masoori Rice (Loose) is 245.5 kg in seed data
     const prodBefore = db.prepare('SELECT current_stock FROM products WHERE barcode = ?').get('LOOSE-001') as {

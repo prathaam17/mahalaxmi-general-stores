@@ -64,6 +64,7 @@ export interface ProductItem {
   barcode: string | null;
   name: string;
   kannadaName: string | null;
+  searchKeywords?: string | null;
   categoryId: number | null;
   categoryName: string | null;
   isLoose: boolean;
@@ -228,6 +229,7 @@ export interface ProductFormData {
   barcode?: string | null;
   name: string;
   kannadaName?: string | null;
+  searchKeywords?: string | null;
   categoryId?: number | null;
   isLoose: boolean;
   unit: string;

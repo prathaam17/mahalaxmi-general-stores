@@ -19,6 +19,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [kannadaName, setKannadaName] = useState('');
+  const [searchKeywords, setSearchKeywords] = useState('');
   const [barcode, setBarcode] = useState('');
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const [isLoose, setIsLoose] = useState(false);
@@ -36,6 +37,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     if (productToEdit) {
       setName(productToEdit.name);
       setKannadaName(productToEdit.kannadaName || '');
+      setSearchKeywords(productToEdit.searchKeywords || '');
       setBarcode(productToEdit.barcode || '');
       setCategoryId(productToEdit.categoryId || '');
       setIsLoose(productToEdit.isLoose);
@@ -48,6 +50,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     } else {
       setName('');
       setKannadaName('');
+      setSearchKeywords('');
       setBarcode('');
       setCategoryId(categories[0]?.id || '');
       setIsLoose(false);
@@ -95,6 +98,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       const formData: ProductFormData = {
         name: name.trim(),
         kannadaName: kannadaName.trim() || null,
+        searchKeywords: searchKeywords.trim() || null,
         barcode: barcode.trim() || null,
         categoryId: categoryId ? Number(categoryId) : null,
         isLoose,
@@ -209,6 +213,23 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-300"
               />
             </div>
+          </div>
+
+          {/* Phonetic / Kanglish Search Keywords */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-stone-700">
+              Search Keywords / ಇತರ ಹುಡುಕಾಟ ಪದಗಳು (Kanglish)
+            </label>
+            <input
+              type="text"
+              value={searchKeywords}
+              onChange={(e) => setSearchKeywords(e.target.value)}
+              placeholder="e.g. sakkare, sakare, cheeni, sugar (auto-matched even in English letters)"
+              className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-lg text-xs font-medium focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-300"
+            />
+            <p className="text-[11px] text-stone-500">
+              Allows shopkeepers to search for this product by typing Kannada words in English alphabet.
+            </p>
           </div>
 
           {/* Category & Unit */}

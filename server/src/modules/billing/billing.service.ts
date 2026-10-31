@@ -1,5 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { getDatabase, runInTransaction } from '../../db/index.js';
+import { expandSearchKeywords } from '../../utils/kannadaSearch.js';
 
 export interface CartItemInput {
   productId?: number | null;
@@ -104,6 +105,16 @@ export class BillingService {
       `;
       params = [];
     } else {
+      const tokens = expandSearchKeywords(trimmed);
+      const orClauses: string[] = ['p.barcode = ?'];
+      params = [trimmed];
+
+      for (const token of tokens) {
+        orClauses.push('(p.name LIKE ? OR p.kannada_name LIKE ? OR p.search_keywords LIKE ?)');
+        const likeStr = `%${token}%`;
+        params.push(likeStr, likeStr, likeStr);
+      }
+
       sql = `
         SELECT
           p.id, p.barcode, p.name, p.kannada_name as kannadaName,
@@ -114,18 +125,20 @@ export class BillingService {
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE p.is_active = 1
-          AND (
-            p.barcode = ?
-            OR p.name LIKE ?
-            OR p.kannada_name LIKE ?
-          )
+          AND (${orClauses.join(' OR ')})
         ORDER BY
-          CASE WHEN p.barcode = ? THEN 0 ELSE 1 END,
+          CASE
+            WHEN p.barcode = ? THEN 0
+            WHEN LOWER(p.name) LIKE ? THEN 1
+            WHEN LOWER(p.kannada_name) LIKE ? THEN 2
+            WHEN LOWER(COALESCE(p.search_keywords, '')) LIKE ? THEN 3
+            ELSE 4
+          END,
           p.name ASC
         LIMIT 25
       `;
-      const likeParam = `%${trimmed}%`;
-      params = [trimmed, likeParam, likeParam, trimmed];
+      const directLike = `%${trimmed.toLowerCase()}%`;
+      params.push(trimmed, directLike, directLike, directLike);
     }
 
     const rows = this.db.prepare(sql).all(...params) as Array<{

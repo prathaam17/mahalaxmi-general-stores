@@ -21,9 +21,21 @@ export function runMigrations(db?: DatabaseSync): { applied: string[]; skipped: 
     );
   `);
 
-  const migrationsDir = path.resolve(__dirname, 'migrations');
-  if (!fs.existsSync(migrationsDir)) {
-    fs.mkdirSync(migrationsDir, { recursive: true });
+  let migrationsDir = path.resolve(__dirname, 'migrations');
+  if (
+    !fs.existsSync(migrationsDir) ||
+    fs.readdirSync(migrationsDir).filter((file) => file.endsWith('.sql')).length === 0
+  ) {
+    // Fallback: When running from compiled dist/, look into src/db/migrations
+    const srcMigrations = path.resolve(__dirname, '../../src/db/migrations');
+    if (
+      fs.existsSync(srcMigrations) &&
+      fs.readdirSync(srcMigrations).filter((file) => file.endsWith('.sql')).length > 0
+    ) {
+      migrationsDir = srcMigrations;
+    } else {
+      fs.mkdirSync(migrationsDir, { recursive: true });
+    }
   }
 
   const migrationFiles = fs
